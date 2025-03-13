@@ -2,6 +2,7 @@ local SENSITIVITY_MULTIPLIER = Config.SENSITIVITY_MULTIPLIER
 local AimbotToggleEnabled = Config.AimbotToggleEnabled
 local AimbotMode = Config.AimbotMode
 local ESPEnabled = Config.ESPEnabled
+local NoClipEnabled = Config.NoClipEnabled
 local AutoShootEnabled = Config.AutoShootEnabled
 local InfiniteJumpEnabled = Config.InfiniteJumpEnabled
 local NoClipEnabled = Config.NoClipEnabled
