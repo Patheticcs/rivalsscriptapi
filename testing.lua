@@ -651,6 +651,11 @@ KeybindLabel.Parent = ScrollingFrame
 
 local ChangeKeybind = createButton(ScrollingFrame, UDim2.new(0, 250, 0, ELEMENT_HEIGHT), UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 6 + 50), "Change Keybind")
 
+local function updateKeybind(newKeybind)
+    Keybind = newKeybind
+    Config.AimbotKeybind = newKeybind
+end
+
 SettingsButton.MouseButton1Click:Connect(function()
     if SettingsFrame.Visible then
         TweenService:Create(BlurEffect, TweenInfo.new(0.3), {Size = 0}):Play()
@@ -744,6 +749,16 @@ ESPHighlights[player] = highlight
 
 end
 
+local function updateESPState(newState)
+    ESPEnabled = newState
+    Config.ESPEnabled = newState
+    if ESPEnabled then
+        applyESPToAllPlayers()
+    else
+        removeESPFromAllPlayers()
+    end
+end
+
 local function removeESP(player)
     if ESPHighlights[player] then
         ESPHighlights[player]:Destroy()
@@ -831,15 +846,11 @@ end)
 
 espToggle:GetChildren()[2].InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        ESPEnabled = not ESPEnabled
-        ESPStatus.Text = "ESP: " .. (ESPEnabled and "On" or "Off")
-        ESPStatus.TextColor3 = ESPEnabled and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
-        ESPIcon.TextColor3 = ESPEnabled and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
-        if ESPEnabled then
-            applyESPToAllPlayers()
-        else
-            removeESPFromAllPlayers()
-        end
+        local newState = not ESPEnabled
+        setESPState(newState)
+        ESPStatus.Text = "ESP: " .. (newState and "On" or "Off")
+        ESPStatus.TextColor3 = newState and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
+        ESPIcon.TextColor3 = newState and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
     end
 end)
 
@@ -947,6 +958,14 @@ local function GetClosestPlayerToCursor()
     end
 
     return closestPlayer
+end
+
+local function updateAimbotState(newState)
+    AimbotToggleEnabled = newState
+    if not newState then
+        AimbotEnabled = false
+        Target = nil
+    end
 end
 
 local function calculateVelocity(part, deltaTime)
@@ -1112,7 +1131,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 if AimbotMode == "Toggle" then
                     AimbotEnabled = not AimbotEnabled
                     if AimbotEnabled then
-                        Target = GetClosestPlayerToCursor() 
+                        Target = GetClosestPlayerToCursor()
                         UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
                     else
                         Target = nil
@@ -1120,7 +1139,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     end
                 else
                     AimbotEnabled = true
-                    Target = GetClosestPlayerToCursor() 
+                    Target = GetClosestPlayerToCursor()
                     UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
                 end
             end
@@ -1137,6 +1156,38 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
         end
     end
 end)
+
+local function createKeybindButton(parent, position, text, defaultKeybind)
+    local button = createButton(parent, UDim2.new(0, 250, 0, ELEMENT_HEIGHT), position, text)
+    button.MouseButton1Click:Connect(function()
+        button.Text = "Press any key..."
+        local inputConnection
+        inputConnection = UserInputService.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Keyboard or 
+               input.UserInputType == Enum.UserInputType.MouseButton1 or 
+               input.UserInputType == Enum.UserInputType.MouseButton2 then
+                if input.UserInputType == Enum.UserInputType.Keyboard then
+                    updateKeybind(input.KeyCode)
+                else
+                    updateKeybind(input.UserInputType)
+                end
+                local keyName
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    keyName = "Left Click"
+                elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                    keyName = "Right Click"
+                else
+                    keyName = tostring(input.KeyCode):gsub("Enum.KeyCode.", "")
+                end
+                button.Text = "Keybind: " .. keyName
+                inputConnection:Disconnect()
+            end
+        end)
+    end)
+    return button
+end
+
+local KeybindButton = createKeybindButton(ScrollingFrame, UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 6 + 50), "Change Keybind", Keybind)
 
 local MIN_DELTA_THRESHOLD = 0.1  
 
@@ -1192,17 +1243,17 @@ local function smoothMoveToTarget(targetPosition)
     mousemoverel(smoothDeltaX, smoothDeltaY)
 end
 
-local aimbotToggle, getAimbotState, setAimbotState = createToggle(ScrollingFrame, UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 3), "Aimbot", AimbotToggleEnabled)
+local aimbotToggle, getAimbotState, setAimbotState = createToggle(ScrollingFrame, UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 3)), "Aimbot", AimbotToggleEnabled)
 aimbotToggle:GetChildren()[2].InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        AimbotToggleEnabled = not AimbotToggleEnabled
-        AimbotEnabled = false
-        Target = nil
-        AimbotStatus.Text = "Aimbot: " .. (AimbotToggleEnabled and (AimbotEnabled and "On" or "Off") or "Off")
-        AimbotStatus.TextColor3 = (AimbotToggleEnabled and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
-        AimbotIcon.TextColor3 = (AimbotToggleEnabled and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
+        local newState = not AimbotToggleEnabled
+        setAimbotState(newState)
+        AimbotStatus.Text = "Aimbot: " .. (newState and (AimbotEnabled and "On" or "Off") or "Off")
+        AimbotStatus.TextColor3 = (newState and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
+        AimbotIcon.TextColor3 = (newState and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
     end
 end)
+
 local function InfiniteJump()
     if not InfiniteJumpEnabled then 
         if InfiniteJumpConnection then
