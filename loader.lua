@@ -12,16 +12,18 @@ https://discord.gg/uGxSYkyp66
 --]]
 
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Patheticcs/rivalsscriptapi/refs/heads/main/testing.lua",true))()
-
 local Config = {
-    SENSITIVITY_MULTIPLIER = 0.5,
+    SENSITIVITY_MULTIPLIER = 100,
     AimbotMode = "Hold",
-    ESPEnabled = false,
-    AutoShootEnabled = false,
-    InfiniteJumpEnabled = false,
-    NoClipEnabled = false,
-    WalkSpeedEnabled = false,
-    WalkSpeed = 50,
+    ESPEnabled = true,
+    AutoShootEnabled = true,
+    InfiniteJumpEnabled = true,
+    NoClipEnabled = true,
+    WalkSpeedEnabled = true,
+    WalkSpeed = 100,
     AimbotKeybind = Enum.UserInputType.MouseButton2
 }
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Patheticcs/rivalsscriptapi/refs/heads/main/testing.lua", true))()
+
+getfenv(1).Config = Config
