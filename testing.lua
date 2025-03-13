@@ -1,3 +1,13 @@
+local SENSITIVITY_MULTIPLIER = Config.SENSITIVITY_MULTIPLIER
+local AimbotMode = Config.AimbotMode
+local ESPEnabled = Config.ESPEnabled
+local AutoShootEnabled = Config.AutoShootEnabled
+local InfiniteJumpEnabled = Config.InfiniteJumpEnabled
+local NoClipEnabled = Config.NoClipEnabled
+local WalkSpeedEnabled = Config.WalkSpeedEnabled
+local MOVE_SPEED = Config.WalkSpeed
+local Keybind = Config.AimbotKeybind
+
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -19,7 +29,6 @@ local ACTIVE_FEATURES_ELEMENT_HEIGHT = 30
 local ACTIVE_FEATURES_FRAME_HEIGHT = 350
 
 local MAX_DISTANCE_THRESHOLD = 1000
-local SENSITIVITY_MULTIPLIER = 0.5  
 local FIRST_PERSON_CHECK = true     
 local MAX_CAMERA_MOVEMENT = 20      
 local SELF_TARGETING_PREVENTION = true  
@@ -31,18 +40,12 @@ local MAX_SENSITIVITY = 1.5
 local BASE_SENSITIVITY = 0.5
 
 local MAX_AIMBOT_DISTANCE = 1000
-local AimbotMode = "Hold"
-local AimbotEnabled = false
 local AimbotToggleEnabled = false
-local AutoShootEnabled = false
-local InfiniteJumpEnabled = false
 local IsRightClickAimbot = true
-local NoClipEnabled = false 
-local WalkSpeedEnabled = false 
+
 local DefaultWalkSpeed = 16 
 
 local Target = nil
-local ESPEnabled = false
 local ESPHighlights = {}
 local InfiniteJumpConnection = nil
 local lastTargetTime = 0
@@ -50,20 +53,20 @@ local LERP_FACTOR = 0.2
 
 local ThemeColors = {
     Dark = {
-        Background = Color3.fromRGB(25, 25, 35),
-        Panel = Color3.fromRGB(30, 30, 40),
-        Accent = Color3.fromRGB(65, 105, 225),
-        Highlight = Color3.fromRGB(100, 149, 237),
-        Text = Color3.fromRGB(240, 240, 255),
-        Danger = Color3.fromRGB(220, 20, 60)
+        Background = Color3.fromRGB(0, 0, 0),        -- Black
+        Panel = Color3.fromRGB(15, 15, 15),           -- Darker Gray
+        Accent = Color3.fromRGB(100, 100, 100),       -- Darker Gray
+        Highlight = Color3.fromRGB(150, 150, 150),    -- Slightly Darker Light Gray
+        Text = Color3.fromRGB(255, 255, 255),         -- White
+        Danger = Color3.fromRGB(255, 255, 255)        -- White (for danger elements)
     },
     Light = {
-        Background = Color3.fromRGB(240, 240, 240),
-        Panel = Color3.fromRGB(255, 255, 255),
-        Accent = Color3.fromRGB(65, 105, 225),
-        Highlight = Color3.fromRGB(100, 149, 237),
-        Text = Color3.fromRGB(30, 30, 30),
-        Danger = Color3.fromRGB(220, 20, 60)
+        Background = Color3.fromRGB(255, 255, 255),   -- White
+        Panel = Color3.fromRGB(230, 230, 230),        -- Light Gray
+        Accent = Color3.fromRGB(128, 128, 128),       -- Gray
+        Highlight = Color3.fromRGB(100, 100, 100),    -- Dark Gray
+        Text = Color3.fromRGB(0, 0, 0),               -- Black
+        Danger = Color3.fromRGB(0, 0, 0)              -- Black (for danger elements)
     }
 }
 
@@ -395,42 +398,53 @@ local function createButton(parent, size, position, text, cornerRadius)
     button.Size = size
     button.Position = position
     button.Text = text
-    button.BackgroundColor3 = ThemeColors[CurrentTheme].Accent
+    button.BackgroundColor3 = ThemeColors[CurrentTheme].Accent -- Default background color
     button.BackgroundTransparency = 0.3
-    button.TextColor3 = ThemeColors[CurrentTheme].Text
+    button.TextColor3 = ThemeColors[CurrentTheme].Text -- Default text color
     button.TextSize = 14
     button.Font = Enum.Font.GothamSemibold
     button.AutoButtonColor = false
     button.Parent = parent
+
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, cornerRadius or 8)
     corner.Parent = button
+
+    -- Hover effect
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.3), {
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255), -- White background on hover
+            TextColor3 = Color3.fromRGB(0, 0, 0), -- Black text on hover
             BackgroundTransparency = 0.1,
-            BackgroundColor3 = ThemeColors[CurrentTheme].Highlight,
             TextSize = 15
         }):Play()
     end)
+
+    -- Reset to default when not hovered
     button.MouseLeave:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.3), {
+            BackgroundColor3 = ThemeColors[CurrentTheme].Accent, -- Default background color
+            TextColor3 = ThemeColors[CurrentTheme].Text, -- Default text color
             BackgroundTransparency = 0.3,
-            BackgroundColor3 = ThemeColors[CurrentTheme].Accent,
             TextSize = 14
         }):Play()
     end)
+
+    -- Button press effect
     button.MouseButton1Down:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.1), {
             Size = size - UDim2.new(0, 4, 0, 4),
             Position = position + UDim2.new(0, 2, 0, 2)
         }):Play()
     end)
+
     button.MouseButton1Up:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.1), {
             Size = size,
             Position = position
         }):Play()
     end)
+
     return button
 end
 
@@ -482,6 +496,7 @@ local AimbotStatus, AimbotIcon = createStatusIndicator(SidePanel, UDim2.new(0.1,
 local AutoShootStatus, AutoShootIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.45, 0), "🔫", "Auto Shoot: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
 local NoClipStatus, NoClipIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.55, 0), "🚀", "NoClip: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
 local WalkSpeedStatus, WalkSpeedIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.65, 0), "🏃", "WalkSpeed: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
+
 
 local SettingsButton = createButton(ScreenGui, UDim2.new(0, 110, 0, 40), UDim2.new(0.9, -120, 0.05, 0), "Settings")
 
@@ -621,7 +636,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
-local CloseSettings = createButton(ScrollingFrame, UDim2.new(0, 40, 0, 40), UDim2.new(0.9, -45, 0.02, 0), "✕")
+local CloseSettings = createButton(ScrollingFrame, UDim2.new(0, 40, 0, 40), UDim2.new(0.9, -45, 0.02, 0), "X")
 CloseSettings.TextSize = 20
 CloseSettings.BackgroundColor3 = ThemeColors[CurrentTheme].Danger
 
@@ -722,14 +737,15 @@ local function createESP(player)
         ESPHighlights[player]:Destroy()
     end
 
-    local highlight = Instance.new("Highlight")
-    highlight.Adornee = player.Character
-    highlight.FillColor = Color3.new(0, 0.7, 1)
-    highlight.OutlineColor = Color3.new(1, 1, 1)
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0.3
-    highlight.Parent = player.Character
-    ESPHighlights[player] = highlight
+local highlight = Instance.new("Highlight")
+highlight.Adornee = player.Character
+highlight.FillColor = Color3.new(0, 0, 0)  -- Black
+highlight.OutlineColor = Color3.new(1, 1, 1)  -- White
+highlight.FillTransparency = 0.5
+highlight.OutlineTransparency = 0.3
+highlight.Parent = player.Character
+ESPHighlights[player] = highlight
+
 end
 
 local function removeESP(player)
@@ -910,7 +926,6 @@ local function GetClosestPlayerToCursor()
     if not localRootPart then return nil end
 
     for _, player in pairs(Players:GetPlayers()) do
-        -- Skip the local player
         if player ~= LocalPlayer and player.Character and not isTeammate(player) and not isDead(player) then
             local head = player.Character:FindFirstChild("Head")
             if head then
@@ -980,7 +995,7 @@ SensitivityTextBox.BackgroundTransparency = 0.3
 SensitivityTextBox.TextColor3 = ThemeColors[CurrentTheme].Text
 SensitivityTextBox.TextSize = 14
 SensitivityTextBox.Font = Enum.Font.Gotham
-SensitivityTextBox.PlaceholderText = "Enter sensitivity (0-100)"
+SensitivityTextBox.PlaceholderText = "Enter sensitivity (0-5)"
 SensitivityTextBox.Parent = ScrollingFrame
 
 local Corner = Instance.new("UICorner")
@@ -1001,7 +1016,7 @@ updateCanvasSize()
 
 local function updateSensitivity()
     local input = tonumber(SensitivityTextBox.Text)
-    if input and input >= 0.000000001 and input <= 100 then
+    if input and input >= 0.000000001 and input <= 5 then
         SENSITIVITY_MULTIPLIER = input
         SensitivityLabel.Text = "Aimbot Sensitivity: " .. string.format("%.9f", SENSITIVITY_MULTIPLIER)
     else
@@ -1135,6 +1150,7 @@ RunService.RenderStepped:Connect(function()
     lastTime = currentTime
 
     if AimbotEnabled and AimbotToggleEnabled then
+
         if not Target then
             Target = GetClosestPlayerToCursor()
         end
@@ -1154,9 +1170,11 @@ RunService.RenderStepped:Connect(function()
                     mousemoverel(deltaX, deltaY)
                 end
             else
+
                 Target = nil
             end
         else
+
             Target = nil
         end
     else
