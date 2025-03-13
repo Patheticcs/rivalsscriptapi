@@ -13,7 +13,8 @@ https://discord.gg/uGxSYkyp66
 
 
 local Config = {
-    SENSITIVITY_MULTIPLIER = 5,
+    SENSITIVITY_MULTIPLIER = 0.5,
+    AimbotToggleEnabled = false
     AimbotMode = "Hold",
     ESPEnabled = false,
     AutoShootEnabled = false,
