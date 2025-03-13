@@ -1,4 +1,5 @@
 local SENSITIVITY_MULTIPLIER = Config.SENSITIVITY_MULTIPLIER
+local AimbotToggleEnabled = Config.AimbotToggleEnabled
 local AimbotMode = Config.AimbotMode
 local ESPEnabled = Config.ESPEnabled
 local AutoShootEnabled = Config.AutoShootEnabled
