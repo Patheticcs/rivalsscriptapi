@@ -848,16 +848,15 @@ espToggle:GetChildren()[2].InputBegan:Connect(function(input)
 end)
 
 local function enableNoclip()
-    local character = LocalPlayer.Character
-    if character then
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-                part.Velocity = Vector3.zero
-                part.RotVelocity = Vector3.zero
+    RunService.Stepped:Connect(function()
+        if NoClipEnabled then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
         end
-    end
+    end)
 end
 
 local function disableNoclip()
@@ -1016,11 +1015,11 @@ updateCanvasSize()
 
 local function updateSensitivity()
     local input = tonumber(SensitivityTextBox.Text)
-    if input and input >= 0.000000001 and input <= 5 then
+    if input and input >= 0.1 and input <= 5 then
         SENSITIVITY_MULTIPLIER = input
-        SensitivityLabel.Text = "Aimbot Sensitivity: " .. string.format("%.9f", SENSITIVITY_MULTIPLIER)
+        SensitivityLabel.Text = "Aimbot Sensitivity: " .. string.format("%.2f", SENSITIVITY_MULTIPLIER)
     else
-        SensitivityTextBox.Text = tostring(SENSITIVITY_MULTIPLIER) 
+        SensitivityTextBox.Text = tostring(SENSITIVITY_MULTIPLIER)
     end
 end
 
@@ -1207,28 +1206,26 @@ aimbotToggle:GetChildren()[2].InputBegan:Connect(function(input)
         AimbotIcon.TextColor3 = (AimbotToggleEnabled and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
     end
 end)
+
 local function InfiniteJump()
-    if not InfiniteJumpEnabled then 
+    if InfiniteJumpEnabled then
+        UserInputService.JumpRequest:Connect(function()
+            local character = LocalPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end
+        end)
+    else
         if InfiniteJumpConnection then
             InfiniteJumpConnection:Disconnect()
             InfiniteJumpConnection = nil
         end
-        return 
     end
-    if InfiniteJumpConnection then
-        InfiniteJumpConnection:Disconnect()
-        InfiniteJumpConnection = nil
-    end
-    InfiniteJumpConnection = UserInputService.JumpRequest:Connect(function()
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-    end)
 end
+
 LocalPlayer.CharacterAdded:Connect(function()
     if InfiniteJumpEnabled then
         InfiniteJump()
@@ -1253,74 +1250,19 @@ InfiniteJumpToggle:GetChildren()[2].InputBegan:Connect(function(input)
 end)
 
 local function handleAutoShoot()
-    local currentTime = tick()
-    if not AutoShootEnabled then 
-        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) and AutoShootIsControllingMouse then
-            mouse1release()
-            AutoShootIsControllingMouse = false
-        end
-        return 
-    end
-    if UserIsHoldingMouse then
-        AutoShootIsControllingMouse = false
-        return
-    end
-    if currentTime - lastTargetTime < 0.05 then
-        return
-    end
-    local mouseLocation = UserInputService:GetMouseLocation()
-    local isTargetDetected = false
-    local closestDistance = 100 
-    local closestPart = nil
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and LocalPlayer.Character and not isTeammate(player) and not isDead(player) then
-            local character = player.Character
-            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-            local head = character:FindFirstChild("Head")
-            local partsToCheck = {head, humanoidRootPart}
-            for _, part in pairs(partsToCheck) do
-                if part and not isPartOfLocalPlayer(part) then
-                    local screenPosition, onScreen = Camera:WorldToViewportPoint(part.Position)
-                    if onScreen then
-                        local partScreenPosition = Vector2.new(screenPosition.X, screenPosition.Y)
-                        local mouseDistance = (partScreenPosition - mouseLocation).Magnitude
-                        if mouseDistance < closestDistance then
-                            closestDistance = mouseDistance
-                            closestPart = part
-                        end
-                    end
-                end
-            end
-        end
-    end
-    local wasTargetDetected = AutoShootIsControllingMouse
-    if closestPart then
+    if AutoShootEnabled and Target then
         local ray = Ray.new(
-            Camera.CFrame.Position, 
-            (closestPart.Position - Camera.CFrame.Position).Unit * 1000
+            Camera.CFrame.Position,
+            (Target.Position - Camera.CFrame.Position).Unit * 1000
         )
-        local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
-        if hit and hit:IsDescendantOf(closestPart.Parent) and not isPartOfLocalPlayer(hit) then
-            isTargetDetected = true
-            lastTargetTime = currentTime
-            if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                mouse1press()
-                AutoShootIsControllingMouse = true
-            end
+        local hit, _ = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+        if hit and hit:IsDescendantOf(Target.Parent) then
+            mouse1press()
+        else
+            mouse1release()
         end
-    end
-    if not isTargetDetected and wasTargetDetected then
-        if not AutoShootCooldown then
-            AutoShootCooldown = true
-            spawn(function()
-                wait(0.2) 
-                if AutoShootIsControllingMouse and not isTargetDetected then
-                    mouse1release()
-                    AutoShootIsControllingMouse = false
-                end
-                AutoShootCooldown = false
-            end)
-        end
+    else
+        mouse1release()
     end
 end
 
