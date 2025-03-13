@@ -51,43 +51,6 @@ local InfiniteJumpConnection = nil
 local lastTargetTime = 0
 local LERP_FACTOR = 0.2
 
-if Config.NoClipEnabled then
-    enableNoclip()
-    NoClipStatus.Text = "NoClip: On"
-    NoClipStatus.TextColor3 = ThemeColors[CurrentTheme].Accent
-    NoClipIcon.TextColor3 = ThemeColors[CurrentTheme].Accent
-
-    RunService.Heartbeat:Connect(function()
-        if NoClipEnabled then
-            enableNoclip()
-        end
-    end)
-end
-
-print("NoClipEnabled:", Config.NoClipEnabled)
-print("AimbotToggleEnabled:", Config.AimbotToggleEnabled)
-
-if Config.AimbotToggleEnabled then
-    AimbotToggleEnabled = true
-    AimbotStatus.Text = "Aimbot: On"
-    AimbotStatus.TextColor3 = ThemeColors[CurrentTheme].Accent
-    AimbotIcon.TextColor3 = ThemeColors[CurrentTheme].Accent
-
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and (input.UserInputType == Keybind or (input.KeyCode and input.KeyCode == Keybind)) then
-            AimbotEnabled = true
-            Target = GetClosestPlayerToCursor()
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input, gameProcessed)
-        if input.UserInputType == Keybind or (input.KeyCode and input.KeyCode == Keybind) then
-            AimbotEnabled = false
-            Target = nil
-        end
-    end)
-end
-
 local ThemeColors = {
     Dark = {
         Background = Color3.fromRGB(0, 0, 0),
