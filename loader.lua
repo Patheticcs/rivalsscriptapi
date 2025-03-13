@@ -18,7 +18,6 @@ local Config = {
     ESPEnabled = false,
     AutoShootEnabled = false,
     InfiniteJumpEnabled = false,
-    NoClipEnabled = false,
     WalkSpeedEnabled = false,
     WalkSpeed = 100,
     AimbotKeybind = Enum.UserInputType.MouseButton2
