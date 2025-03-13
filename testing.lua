@@ -1,14 +1,11 @@
 local SENSITIVITY_MULTIPLIER = Config.SENSITIVITY_MULTIPLIER
-local AimbotToggleEnabled = Config.AimbotToggleEnabled
 local AimbotMode = Config.AimbotMode
 local ESPEnabled = Config.ESPEnabled
 local NoClipEnabled = Config.NoClipEnabled
 local AutoShootEnabled = Config.AutoShootEnabled
 local InfiniteJumpEnabled = Config.InfiniteJumpEnabled
-local NoClipEnabled = Config.NoClipEnabled
 local WalkSpeedEnabled = Config.WalkSpeedEnabled
 local MOVE_SPEED = Config.WalkSpeed
-local Keybind = Config.AimbotKeybind
 
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
