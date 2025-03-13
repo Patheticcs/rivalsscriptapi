@@ -1243,7 +1243,13 @@ local function smoothMoveToTarget(targetPosition)
     mousemoverel(smoothDeltaX, smoothDeltaY)
 end
 
-local aimbotToggle, getAimbotState, setAimbotState = createToggle(ScrollingFrame, UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 3)), "Aimbot", AimbotToggleEnabled)
+local aimbotToggle, getAimbotState, setAimbotState = createToggle(
+    ScrollingFrame,
+    UDim2.new(0.1, 0, 0, PADDING + (ELEMENT_HEIGHT + SPACING) * 3),
+    "Aimbot",
+    AimbotToggleEnabled
+)
+
 aimbotToggle:GetChildren()[2].InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local newState = not AimbotToggleEnabled
